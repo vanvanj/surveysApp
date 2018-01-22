@@ -1,3 +1,6 @@
+const _ = require('lodash')
+const Path = require('path-parser')
+const {URL} = require('url')
 const mongoose = require('mongoose')
 const requireLogin = require('../middlewares/requireLogin')
 const requireCredit = require('../middlewares/requireCredit')
@@ -7,16 +10,59 @@ const surveyTemplate = require('../services/emailTemplates/surveyTemplate')
 const Survey = mongoose.model('surveys')
 
 module.exports = app => {
+    app.get('/api/surveys', (req, res) => {
+        Survey.find({
+            _user: req.user.id
+        }).select({
+            recipients: false
+        }).then(surveys => {
+            res.send((surveys));
+        })
+    })
 
     app.get('/api/surveys/thanks', function(req, res) {
         res.send('thanks for voting!')
-    });
+    })
 
+    app.get('/api/surveys/:surveyId/:choice', function(req, res) {
+        res.send('thanks for voting!')
+    })
+
+    //"webhook": "./sendgrid_webhook.sh"
     app.post('/api/surveys/webhooks', (req, res) => {
-        console.log('!!!!')
+        const p = new Path('/api/surveys/:surveyId/:choice')
+        _.chain(req.body)
+            .map(req.body, event => {
 
-        console.log(req.body)
+                const match = p.test(pathname)
+                if (match) {
+                    return {
+                        email: email,
+                        surveyId: match.surveyId,
+                        choice:match.choice
+                    }
+                }
+            })
+            .compact()
+            .unionBy('email', 'surveyId')
+            .each(event => {
+                Survey.updateOne({
+                    id: surveyId,
+                    recipients: {
+                        $elemMatch: {
+                            email,
+                            responded: false
+                        }
+                    }
+                }, {
+                    $inc :{ [choice]: 1},
+                    $set :{ 'recipients.$.reponded': true}
+                })
+            }).exec()
+            .value()
+
         res.send({});
+
     });
 
     app.post('/api/surveys', requireCredit, requireLogin, (req, res) => {
