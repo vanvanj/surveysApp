@@ -13,7 +13,7 @@
     "/api/stripe": {
       "target": "http://localhost:5000"
     },
-    "/api/*": {
+    "/api/surveys": {
       "target": "http://localhost:5000"
     }
   },

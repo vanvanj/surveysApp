@@ -11,13 +11,14 @@ const Survey = mongoose.model('surveys')
 
 module.exports = app => {
     app.get('/api/surveys', (req, res) => {
-        Survey.find({
-            _user: req.user.id
-        }).select({
-            recipients: false
-        }).then(surveys => {
-            res.send((surveys));
-        })
+        // Survey.find({
+        //     _user: req.user.id
+        // }).select({
+        //     recipients: false
+        // }).then(surveys => {
+        //     res.send((surveys));
+        // })
+        res.send('this is api/surveys')
     })
 
     app.get('/api/surveys/thanks', function(req, res) {
